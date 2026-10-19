@@ -42,3 +42,18 @@ The DAG editor's confounder/mediator/collider markers are structural annotations
 GitHub Pages serves the `main` branch root. Assets must remain in the `assets/` directory. `.nojekyll` is intentional.
 
 No lab establishment date is included.
+
+## Portrait studio (People page)
+
+The bottom of `people.html` includes a key-gated portrait editing interface.
+
+- Choose Aman, Maheen, Benjamin or Raghav.
+- Select a JPG, PNG or WebP (up to 12 MB), or drag it into the preview area.
+- Change the portrait frame between rounded square and circle.
+- Adjust zoom (100–300%), shift the crop on either axis, or drag the photo directly in the preview.
+- Preview the result on that member's card. Save the source image and crop settings to the current browser's IndexedDB to keep previews after refresh.
+- Export a 960 × 960 transparent PNG matching the chosen clipped frame.
+
+**Deployment limitation:** This is a local photo-preview and export editor. The editor's shared simple key is **not actual GitHub write authorization**. GitHub Pages is static; permanently publishing portrait files for *all* visitors requires making a GitHub commit with properly authorized credentials, e.g. uploading the exported image through the connected GitHub account/assistant. Do not put GitHub tokens or organization credentials in public source code. Members' photos should only be published with permission.
+
+Implementation: `assets/portrait-studio.js`, additions to `assets/styles.css`, and portrait placeholders in `people.html`. No remote photo files are included yet. Local previews are specific to the visitor's browser.
