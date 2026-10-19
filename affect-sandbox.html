@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Emotion Dynamics Playground | Human2AI Labs</title>
+  <meta name="description" content="An interactive educational preview of emotional tone dynamics in AI conversations, with VAD sliders and simulated trajectories.">
+  <meta name="theme-color" content="#fffaf4">
+  <meta property="og:title" content="Emotion Dynamics Playground | Human2AI Labs"><meta property="og:description" content="An interactive educational preview of emotional tone dynamics in AI conversations."><meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="page-sandbox">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+ <div class="container header-inner">
+  <a class="brand" href="index.html" aria-label="Human2AI Labs homepage"><span class="brand-mark"><span class="brand-h">H</span><span class="brand-split">2</span><span class="brand-a">A</span></span><span class="brand-word">HUMAN<span class="brand-two">2</span>AI<span class="brand-sub">LABS</span></span></a>
+  <button class="nav-toggle" type="button" aria-label="Open navigation" aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+    <a href="index.html" >Home</a><a href="research.html" aria-current="page">Research</a><a href="projects.html" >Projects</a><a href="people.html">People</a><a href="contact.html" >Contact</a>
+    <a href="contact.html" class="nav-cta">Collaborate <span aria-hidden="true">↗</span></a>
+  </nav>
+ </div>
+</header>
+<main id="main"><section class="page-hero sandbox-hero"><div class="container"><div class="eyebrow"><span class="eyebrow-line"></span> EXPERIMENTAL PREVIEW / HUMAN–AI INTERACTION</div><h1>Emotion Dynamics <em>Playground.</em></h1><p>A miniature, interactive illustration of how conversational emotional tone might shift across turns. Tune inputs and watch a simulated response trajectory unfold.</p><div class="sandbox-hero-links"><a class="text-link" href="research.html">← Back to research</a><span class="pill">ILLUSTRATIVE TOY MODEL</span></div></div></section>
+<section class="section sandbox-section"><div class="container"><div class="affect-workbench">
+<div class="affect-intro"><div><div class="eyebrow">SIMULATION PREVIEW</div><h2>Give the conversation <em>a pulse.</em></h2><p>Three Valence–Arousal–Dominance signals can evolve independently. This demonstration uses simple randomized updates—not the fitted methods or experimental results of an H2A paper.</p></div><div class="affect-status"><span class="live-dot"></span> LOCAL EXPERIMENT</div></div>
+<div class="affect-main"><section class="affect-controls"><h3>User signal</h3><p>Change the affective tone of the next incoming message.</p><label class="range-control"><span>Valence <output id="val-out">+0.60</output></span><input id="affect-val" type="range" min="-1" max="1" step=".05" value=".6"><small>Negative ↔ positive</small></label><label class="range-control"><span>Arousal <output id="aro-out">0.70</output></span><input id="affect-aro" type="range" min="0" max="1" step=".05" value=".7"><small>Calm ↔ activated</small></label><label class="range-control"><span>Dominance <output id="dom-out">+0.10</output></span><input id="affect-dom" type="range" min="-1" max="1" step=".05" value=".1"><small>Reserved ↔ assertive</small></label>
+<div class="affect-divider"></div><h3>Simulation behavior</h3><label class="range-control"><span>History carryover <output id="mem-out">35%</output></span><input id="affect-memory" type="range" min="0" max=".85" step=".05" value=".35"><small>Weight of previous simulated model state</small></label><label class="range-control"><span>Random variation <output id="noise-out">0.15</output></span><input id="affect-noise" type="range" min="0" max=".4" step=".05" value=".15"><small>Amplitude of added random noise</small></label><div class="affect-buttons"><button id="affect-next" class="button button-primary" type="button">Next turn ↗</button><button id="affect-random" class="button button-outline" type="button">Random user tone</button><button id="affect-reset" class="button button-ghost" type="button">Reset</button></div></section>
+<section class="affect-chart-panel"><div class="affect-chart-heading"><div><div class="eyebrow">LIVE TRAJECTORIES</div><h3>Simulated AI response tone</h3></div><span class="pill" id="affect-turns">0 TURNS</span></div><svg id="affect-chart" viewBox="0 0 800 400" role="img" aria-label="Illustrative emotional tone trajectories for valence, arousal and dominance"></svg><div class="affect-legend"><span><i class="legend-val"></i> Valence</span><span><i class="legend-aro"></i> Arousal</span><span><i class="legend-dom"></i> Dominance</span></div><div class="affect-readouts"><div><span>VALENCE</span><strong id="current-val">0.00</strong></div><div><span>AROUSAL</span><strong id="current-aro">0.50</strong></div><div><span>DOMINANCE</span><strong id="current-dom">0.00</strong></div></div></section></div>
+<div class="affect-explanation"><div class="eyebrow">WHAT THIS SHOWS</div><p>Human conversations often carry emotional momentum. Here, each toy-model turn blends the current user signal, a fraction of the prior simulated state, and random variation. This is a teaching visualization only: <strong>the curves are not empirical model outputs, trained predictions, or validation of real LLM emotion.</strong></p></div>
+</div></div></section></main>
+<footer class="site-footer">
+ <div class="container footer-top"><div><a class="footer-logo" href="index.html">H<span>2</span>A<span class="footer-lab"> LABS</span></a><p>Human insights. Better questions about AI.</p></div><div class="footer-links"><a href="research.html">Research</a><a href="projects.html">Projects</a><a href="people.html">People</a><a href="contact.html">Contact</a></div></div>
+ <div class="container footer-bottom"><span>Human2AI Labs · Independent AI research lab</span><span>Research-led. Evidence-driven.</span></div>
+</footer>
+<script src="assets/site.js" defer></script>
+<script src="assets/affect-sandbox.js" defer></script>
+</body>
+</html>

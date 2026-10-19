@@ -1,55 +1,44 @@
-# Human2AI Labs — official website
+# Human2AI Labs — official research website
 
-A lightweight, responsive research website designed for GitHub Pages.
-
-**Public URL after deployment:** https://human2ai.github.io
+The public website for Human2AI Labs, hosted at https://human2ai.github.io.
 
 ## Pages
 
-- `index.html` — mission, research themes, featured paper
-- `research.html` — papers, publication status, abstracts, links
-- `projects.html` — research initiatives and benchmarks
-- `people.html` — four team members; replace initials with portraits when ready
-- `contact.html` — collaboration directions and GitHub contact
-- `assets/styles.css` — entire white-and-orange visual design
-- `assets/site.js` — mobile menu and optional contact email
-- `assets/favicon.svg` — lab favicon
+- `index.html`: mission, accepted research, lab identity.
+- `research.html`: research catalog; papers 02/03 require an unlock key to see details.
+- `projects.html`: research projects and interactive experiments.
+- `people.html`: team profiles.
+- `contact.html`: collaboration and contact information.
+- `dag-sandbox.html`: interactive causal DAG editor (graph structure, paths, confounders, mediators, colliders, direct adjacency matrix).
+- `affect-sandbox.html`: **illustrative** emotional-dynamics toy simulator; not the fitted method or experimental results from a study.
 
-## Publish using GitHub's website UI
+The site uses only HTML/CSS/vanilla JS and GitHub Pages; no build process is required.
 
-1. Open https://github.com/human2ai/human2ai.github.io
-2. Click **Add file → Upload files**. Upload the contents of this extracted folder, preserving `assets/` and the files in the repository root. Avoid nesting the entire folder under another folder.
-3. Commit the changes to `main`.
-4. Under **Settings → Pages**, choose **Deploy from a branch**, `main`, `/(root)`, then **Save**.
-5. Open https://human2ai.github.io. It may take a few minutes for the first deployment.
+## Research access
 
-If using Git locally instead, copy these files into the existing cloned repository and `git add . && git commit -m "Launch Human2AI Labs website" && git push`.
+Research titles, author lists, summaries, and PDF links for papers 02 and 03 are kept out of the regular HTML and stored in a PBKDF2/AES-GCM encrypted payload in `assets/papers-lock.js`. Visitors enter the lab's chosen key to decrypt in the browser; no key is published in the repository. An unlock stays in memory only until leaving the page or reloading.
 
-## Edit before or after publishing
+**Important:** This is a convenience barrier for casual visitors, **not secure authentication or guaranteed confidentiality**. GitHub Pages is public static hosting, low-entropy passwords can be guessed, and a paper that was publicly posted on OpenReview remains accessible through its original public record. To truly restrict access, host unpublished material behind server-side authentication instead.
 
-- **Member photos:** In `people.html`, replace each `<div class="person-initials">...` with an `<img>` element and add a portrait image under `assets/`. Confirm member permission before publishing photos.
-- **Member bios / affiliations:** Edit the individual cards in `people.html`. University/school names are *paper affiliations*, not claims that someone is a graduate or employee of the school.
-- **Research:** `research.html` includes the three H2A Labs studies and a clearly separated prior paper by Aman Syed. See the manuscript-status note below.
-- **Public email:** Fill in `email: ''` inside `assets/site.js`. The page will automatically reveal a `mailto:` link.
-- **Research code and datasets:** Add public GitHub repository links to project cards when available.
-- **Style:** Main color variables are at the top of `assets/styles.css`.
+To change the key or paper details, re-encrypt an updated JSON payload with 160,000 PBKDF2-HMAC-SHA256 iterations, a random 16-byte salt, a random 12-byte AES-GCM IV, and AES-256-GCM, then update the `salt`, `iv`, and `body` values in `assets/papers-lock.js`.
 
-## Publication accuracy notes
+## Publication wording
 
-- Causal graph paper: **accepted at five NeurIPS 2026 workshops** (LIGHT oral, LP4FM spotlight, TAE/PTA/NewInML posters); do not call this a main-conference acceptance.
-- Affective dynamics paper: **ICLR 2027 main conference submission**, not accepted. The user-provided OpenReview record indicates a submission and public PDF.
-- Agentic paper: the user provided a public **NeurIPS 2026 AgenticLS workshop submission** containing "Biological Hypothesis Formation" in its original title. The site uses the broader research direction title requested by the user and links the earlier biological workshop submission explicitly. The non-biological extension is **in progress**; neither version is described as accepted.
-- Prior MedVCTP research: distinct from H2A Labs; presented separately as a member's prior work.
-- **No establishment date** is displayed on the site.
+- Causal reasoning: accepted at **five NeurIPS 2026 workshops**, with LIGHT oral and LP4FM spotlight.
+- Paper 02: submitted to ICLR 2027 main conference; **not accepted**.
+- Paper 03: an earlier version was submitted to the NeurIPS 2026 AgenticLS workshop; a non-biological extension is in progress. **No acceptance claimed**.
+- MedVCTP: prior research by a member; not a Human2AI Labs project.
 
-## Testing locally
+## Modifying the sandboxes
 
-Open `index.html` in any browser, or run from this folder:
+- `assets/dag-sandbox.js`: edit presets, automatic role inference, edge creation, live matrix.
+- `assets/affect-sandbox.js`: toy response update and charts.
+- `assets/styles.css`: white/orange design system, responsive components and both playgrounds.
 
-```sh
-python -m http.server 8000
-```
+The DAG editor's confounder/mediator/collider markers are structural annotations for teaching and should not be treated as automated causal-identification proofs. The emotional model is intentionally synthetic.
 
-Then browse to http://localhost:8000.
+## Publishing
 
-The website uses HTML/CSS/vanilla JavaScript and has **no Node.js dependency or build step**.
+GitHub Pages serves the `main` branch root. Assets must remain in the `assets/` directory. `.nojekyll` is intentional.
+
+No lab establishment date is included.
