@@ -17,7 +17,8 @@ const outgoing=id=>state.edges.filter(e=>e.from===id).map(e=>e.to);
 const incoming=id=>state.edges.filter(e=>e.to===id).map(e=>e.from);
 function reachable(a,b){if(a===b)return false;const seen=new Set([a]),q=[a];while(q.length){const u=q.shift();for(const v of outgoing(u)){if(v===b)return true;if(!seen.has(v)){seen.add(v);q.push(v);}}}return false;}
 function ancestors(id){const seen=new Set(),q=[id];while(q.length){for(const v of incoming(q.shift())){if(!seen.has(v)){seen.add(v);q.push(v);}}}return seen;}
-function roles(id){const result=[];if(id!==state.exposure&&id!==state.outcome){const ax=ancestors(state.exposure),ay=ancestors(state.outcome);if(ax.has(id)&&ay.has(id))result.push('Confounder');if(reachable(state.exposure,id)&&reachable(id,state.outcome))result.push('Mediator');}if(incoming(id).length>=2)result.push('Collider');return result;}
+function engine(){return window.H2ADagLogic.graph(state.nodes,state.edges);}
+function roles(id){return engine().classify(id,state.exposure,state.outcome);}
 function point(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const ctm=svg.getScreenCTM();return ctm?p.matrixTransform(ctm.inverse()):{x:0,y:0};}
 function element(tag,attrs={}){const el=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs)){el.setAttribute(k,String(v));}return el;}
 function notice(s){$('dag-notice').textContent=s;}
@@ -37,12 +38,12 @@ hit.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preven
 edgesLayer.append(visible,hit);
 }
 for(const n of state.nodes){const g=element('g',{transform:'translate('+n.x+' '+n.y+')',class:'dag-node'+(state.selectedNode===n.id?' selected':'')+(state.connecting===n.id?' connecting':''),tabindex:0,role:'button','aria-label':'Select '+n.label});
-const r=roles(n.id);const circle=element('circle',{r:40,cx:0,cy:0,class:'dag-node-circle'});g.append(circle);
+const info=roles(n.id),r=[...info.target.map(x=>x+' (X→Y)'),...info.structural];const circle=element('circle',{r:40,cx:0,cy:0,class:'dag-node-circle'});g.append(circle);
 if(r.length){const halo=element('circle',{r:45,cx:0,cy:0,class:'dag-node-halo'});g.insertBefore(halo,circle); }
 const short=n.label.length>17?n.label.slice(0,16)+'…':n.label;
 const txt=element('text',{x:0,y:4,'text-anchor':'middle',class:'dag-node-text'});txt.textContent=short;g.append(txt);
 const id=element('text',{x:0,y:62,'text-anchor':'middle',class:'dag-node-id'});id.textContent=n.id;g.append(id);
-if(r.length){const label=element('text',{x:0,y:76,'text-anchor':'middle',class:'dag-node-role'});label.textContent=r.join(' / ');g.append(label);}
+if(r.length){const label=element('text',{x:0,y:76,'text-anchor':'middle',class:'dag-node-role'});label.textContent=r.slice(0,2).join(' · ')+(r.length>2?' +'+(r.length-2):'');g.append(label);}
 g.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;ev.stopPropagation();if(state.mode==='connect'){interactNode(n.id);return;}selectNode(n.id);const p=point(ev);state.dragging={id:n.id,dx:n.x-p.x,dy:n.y-p.y};try{svg.setPointerCapture(ev.pointerId);}catch(_){}render();});
 g.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();interactNode(n.id);}});
 nodesLayer.append(g);
@@ -50,27 +51,53 @@ nodesLayer.append(g);
 }
 function inspector(){
 const node=byId(state.selectedNode);
-$('dag-selected-label').textContent=node?node.label:(state.selectedEdge?state.selectedEdge.from+' → '+state.selectedEdge.to:'Choose a node');
+$('dag-selected-label').textContent=node?node.label:(state.selectedEdge?byId(state.selectedEdge.from).label+' → '+byId(state.selectedEdge.to).label:'Choose a variable');
 $('dag-label-input').disabled=!node;$('dag-label-input').value=node?node.label:'';
 const box=$('dag-role-tags');box.replaceChildren();
-if(node){const r=roles(node.id);for(const role of r){const t=document.createElement('span');t.className='role-tag role-'+role.toLowerCase().slice(0,3);t.textContent=role;box.append(t);}if(!r.length){const t=document.createElement('span');t.className='role-muted';t.textContent='No detected special role';box.append(t);}}
-else{const t=document.createElement('span');t.className='role-muted';t.textContent=state.selectedEdge?'Selected an arrow':'Select a node to inspect its role.';box.append(t);}
-$('dag-node-description').textContent=node?'Incoming arrows: '+incoming(node.id).length+' · Outgoing arrows: '+outgoing(node.id).length+'. Roles update with your exposure/outcome selection.':state.selectedEdge?'Use Delete selected to remove this arrow.':'Click or tap a variable to inspect it. Drag to reposition it.';
+if(node){
+const r=roles(node.id);
+for(const [heading,list] of [['Relative to selected X → Y',r.target],['Structure of entire graph',r.structural]]){
+const section=document.createElement('div');section.className='dag-role-section';
+const title=document.createElement('strong');title.className='dag-role-section-title';title.textContent=heading;section.append(title);
+const row=document.createElement('div');row.className='dag-tag-row';
+if(list.length) for(const label of list){const span=document.createElement('span');span.className='role-tag role-'+label.toLowerCase();span.textContent=label;row.append(span);}
+else {const empty=document.createElement('span');empty.className='role-muted';empty.textContent='No matching role';row.append(empty);}
+section.append(row);box.append(section);
+}
+}else{const empty=document.createElement('span');empty.className='role-muted';empty.textContent=state.selectedEdge?'Selected an arrow':'Select a variable to inspect.';box.append(empty);}
+$('dag-node-description').textContent=node?'Incoming: '+incoming(node.id).length+' · Outgoing: '+outgoing(node.id).length+'. Intermediate is any node along a chain; Mediator requires a path from your selected X to Y.':state.selectedEdge?'Use Delete selected to remove this arrow.':'Fork, collider and intermediate roles appear across the graph. Confounder and mediator depend on the chosen X and Y.';
 $('dag-connect').classList.toggle('is-active',state.mode==='connect');
 $('dag-connect').setAttribute('aria-pressed',String(state.mode==='connect'));
-$('dag-mode').textContent=state.connecting?'Now click the effect variable':state.mode==='connect'?'Click the cause variable, then the effect':state.selectedEdge?'Arrow selected':'Select a node or an arrow to inspect it';
+$('dag-mode').textContent=state.connecting?'Now click the effect variable':state.mode==='connect'?'Click the cause variable, then the effect':state.selectedEdge?'Arrow selected':'Select a variable or arrow to inspect it';
 }
 function metrics(){
-const n=state.nodes.length;
-$('stat-nodes').textContent=n;$('stat-edges').textContent=state.edges.length;
-let count=0;for(const a of state.nodes){for(const b of state.nodes){if(reachable(a.id,b.id))count++;}}
-$('stat-reach').textContent=count;
-$('stat-max').textContent=n*(n-1)/2;
+const n=state.nodes.length,graph=engine(),values=graph.matrix(),totals=graph.totals();
+$('stat-nodes').textContent=n;$('stat-edges').textContent=totals.direct;
+$('stat-reach').textContent=totals.reachable;$('stat-max').textContent=n*(n-1)/2;$('stat-indirect').textContent=totals.indirect;
 const matrix=document.createElement('table');matrix.className='connection-matrix';
-const head=document.createElement('tr');const blank=document.createElement('th');blank.textContent='FROM ↓ / TO →';head.append(blank);
-for(const n of state.nodes){const th=document.createElement('th');th.textContent=n.id;th.title=n.label;head.append(th);}matrix.append(head);
-for(const a of state.nodes){const tr=document.createElement('tr');const name=document.createElement('th');name.textContent=a.id;name.title=a.label;tr.append(name);for(const b of state.nodes){const cell=document.createElement('td'),direct=state.edges.some(e=>e.from===a.id&&e.to===b.id);cell.textContent=direct?'●':a.id===b.id?'—':'·';cell.className=direct?'linked':'';cell.title=a.label+' → '+b.label+': '+(direct?'direct edge':'none');tr.append(cell);}matrix.append(tr);}
-$('dag-matrix').replaceChildren(matrix);
+const caption=document.createElement('caption');caption.className='sr-only';caption.textContent='Row cause to column effect: direct and indirect paths';matrix.append(caption);
+const thead=document.createElement('thead'),head=document.createElement('tr'),corner=document.createElement('th');
+corner.textContent='Cause ↓ / Effect →';corner.scope='col';corner.className='matrix-corner';head.append(corner);
+function addName(target,node,cls,scope){
+const cell=document.createElement('th');cell.className=cls;cell.scope=scope;cell.title=node.label+' ('+node.id+')';
+const label=document.createElement('span');label.className='axis-label';label.textContent=node.label||node.id;cell.append(label);target.append(cell);
+}
+for(const node of state.nodes)addName(head,node,'matrix-axis','col');
+thead.append(head);matrix.append(thead);
+const tbody=document.createElement('tbody');
+state.nodes.forEach((a,i)=>{
+const row=document.createElement('tr');addName(row,a,'matrix-row-label','row');
+state.nodes.forEach((b,j)=>{
+const type=values[i][j],cell=document.createElement('td');cell.className='matrix-'+type;
+cell.textContent={self:'—',direct:'→',indirect:'↝',none:'·'}[type];
+cell.title=a.label+' → '+b.label+': '+({self:'Same variable',direct:'Direct arrow',indirect:'Indirect multi-step path',none:'No directed path'}[type]);cell.setAttribute('aria-label',cell.title);row.append(cell);
+});tbody.append(row);});
+matrix.append(tbody);$('dag-matrix').replaceChildren(matrix);
+const overview=$('dag-all-roles');if(overview){overview.replaceChildren();
+for(const node of state.nodes){const r=graph.classify(node.id,state.exposure,state.outcome),all=[...r.target.map(t=>t+' (X→Y)'),...r.structural];if(!all.length)continue;
+const entry=document.createElement('div');entry.className='dag-summary-row';const name=document.createElement('strong');name.textContent=node.label||node.id;entry.append(name);
+const tags=document.createElement('div');tags.className='dag-summary-tags';for(const value of all){const t=document.createElement('span');t.textContent=value;t.className='role-tag role-'+value.split(' ')[0].toLowerCase();tags.append(t);}entry.append(tags);overview.append(entry);}
+if(!overview.childElementCount){const t=document.createElement('p');t.className='role-muted';t.textContent='Add some arrows to find structural roles.';overview.append(t);}}
 }
 function render(){rebuildSelect($('dag-exposure'),state.exposure);rebuildSelect($('dag-outcome'),state.outcome);draw();inspector();metrics();}
 svg.addEventListener('pointermove',ev=>{if(!state.dragging)return;const n=byId(state.dragging.id),p=point(ev);if(!n)return;n.x=Math.max(65,Math.min(915,p.x+state.dragging.dx));n.y=Math.max(65,Math.min(460,p.y+state.dragging.dy));draw();});
