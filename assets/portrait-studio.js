@@ -64,8 +64,11 @@
     frame.dataset.shape=shape||'rounded';
     const has=Boolean(url);
     img.hidden=!has;fallback.hidden=has;
-    if(has){img.src=url;frame.classList.add('has-portrait');}
-    else {img.removeAttribute('src');frame.classList.remove('has-portrait');}
+    if(has){
+      img.src=url;
+      img.style.objectPosition='center';
+      frame.classList.add('has-portrait');
+    } else {img.removeAttribute('src');frame.classList.remove('has-portrait');}
   }
   function setStoredImage(id,blob,shape){
     clearImageURL(id);const url=URL.createObjectURL(blob);activeUrls.set(id,url);setCard(id,url,shape);
@@ -129,9 +132,8 @@
   }
   function releaseDraft(){if(draft?.url){URL.revokeObjectURL(draft.url);}draft=null;}
   function restoreCard(id){
-    const record=snapshots.get(id);
-    if(record?.cropBlob){setStoredImage(id,record.cropBlob,record.config?.shape);}
-    else {clearImageURL(id);setCard(id,null,'rounded');}
+    clearImageURL(id);
+    setCard(id,'assets/portraits/'+id+'.webp','rounded');
   }
   async function decode(blob){
     const url=URL.createObjectURL(blob),image=new Image();
@@ -252,7 +254,7 @@
   (async()=>{
     try{
       db=await openDatabase();const records=await getAll();
-      for(const record of records){if(users[record.id]&&record.cropBlob){snapshots.set(record.id,record);setStoredImage(record.id,record.cropBlob,record.config?.shape);}}
+      for(const record of records){if(users[record.id]&&record.cropBlob){snapshots.set(record.id,record);}}
     }catch(error){/* In private browsing, local preview can still work without persistence. */}
     applyControls(defaults());showPreview();
   })();

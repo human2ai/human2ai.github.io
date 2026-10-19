@@ -56,4 +56,4 @@ The bottom of `people.html` includes a key-gated portrait editing interface.
 
 **Deployment limitation:** This is a local photo-preview and export editor. The editor's shared simple key is **not actual GitHub write authorization**. GitHub Pages is static; permanently publishing portrait files for *all* visitors requires making a GitHub commit with properly authorized credentials, e.g. uploading the exported image through the connected GitHub account/assistant. Do not put GitHub tokens or organization credentials in public source code. Members' photos should only be published with permission.
 
-Implementation: `assets/portrait-studio.js`, additions to `assets/styles.css`, and portrait placeholders in `people.html`. No remote photo files are included yet. Local previews are specific to the visitor's browser.
+Implementation: `assets/portrait-studio.js`, additions to `assets/styles.css`, and portrait placeholders in `people.html`. Published portraits are stored in `assets/portraits/` and displayed globally. Local photo drafts are specific to the editor's browser and do not replace the public images unless separately committed to GitHub.
